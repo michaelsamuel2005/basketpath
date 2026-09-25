@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "basketpath"
+version = "0.1.0"
+description = "Search, browse and checkout analytics on Google's public GA4 e-commerce sample"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Michael Samuel" }]
+dependencies = ["duckdb>=1.0", "pandas>=2.1", "numpy>=1.26", "pyarrow>=14", "matplotlib>=3.8"]
+
+[project.optional-dependencies]
+bigquery = ["google-cloud-bigquery>=3.20", "db-dtypes>=1.2"]
+dev = ["pytest>=8"]
+
+[tool.setuptools]
+packages = ["basketpath"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

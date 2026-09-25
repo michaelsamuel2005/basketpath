@@ -1,0 +1,9 @@
+# Raw extracts stay local: regenerate with `python -m basketpath.extract`.
+data/raw/
+build/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+.DS_Store

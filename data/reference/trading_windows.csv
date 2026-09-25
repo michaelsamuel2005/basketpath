@@ -1,0 +1,6 @@
+window_name,start_date,end_date,role
+Baseline: three weeks before Thanksgiving,2020-11-02,2020-11-22,baseline
+Black Friday to Cyber Monday,2020-11-27,2020-11-30,event
+Run-up to Christmas,2020-12-07,2020-12-20,event
+Christmas to New Year,2020-12-24,2021-01-01,event
+January,2021-01-04,2021-01-31,event
