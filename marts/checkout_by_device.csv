@@ -1,0 +1,4 @@
+device_category,began_checkout,added_delivery,added_payment,purchased,added_delivery_rate,added_payment_rate,purchased_rate,completion_lo,completion_hi
+desktop,3984,3984,2609,1801,1,0.654869,0.452058,0.436657,0.467551
+mobile,2720,2720,1812,1288,1,0.666176,0.473529,0.454816,0.492317
+tablet,148,148,102,69,1,0.689189,0.466216,0.38772,0.546422

@@ -1,0 +1,10 @@
+segment,definition,sessions,share_of_sessions,purchasing_sessions,conversion,conversion_lo,conversion_hi,revenue_usd,revenue_per_session
+All sessions,TRUE,244763,1,3158,0.0129023,0.0124628,0.0133571,243310,0.994064
+Searched,has_search,10624,0.0434053,428,0.0402861,0.0367103,0.0441943,36434,3.42941
+Did not search,NOT has_search,234139,0.956595,2730,0.0116597,0.0112329,0.0121026,206876,0.883561
+"Viewed products, added nothing",has_view_item AND NOT has_add_to_cart,35833,0.146399,652,0.0181955,0.0168624,0.0196319,45340,1.26531
+Abandoned basket,has_add_to_cart AND NOT has_purchase,11084,0.0452846,0,0,0,0.000346457,0,0
+Abandoned checkout,has_begin_checkout AND NOT has_purchase,3694,0.0150922,0,0,0,0.00103884,0,0
+New visitors on mobile,user_type = 'new' AND device_category = 'mobile',72469,0.296078,507,0.00699609,0.00641484,0.00762961,33197,0.458086
+Returning previous buyers,prior_purchaser,3780,0.0154435,308,0.0814815,0.0731793,0.0906335,25183,6.66217
+Paid search visitors,medium_group = 'paid search',10839,0.0442837,106,0.0097795,0.0080928,0.0118136,6472,0.597103

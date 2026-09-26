@@ -1,0 +1,16 @@
+stage,event,field,source,n_ok,n_events,coverage,target,status
+Arrive,session_start,ga_session_id,event_param,354970,354970,1,0.95,pass
+Arrive,session_start,ga_session_number,event_param,354970,354970,1,0.95,pass
+Arrive and browse,page_view,page_location,event_param,1350428,1350428,1,0.95,pass
+Arrive and browse,page_view,page_title,event_param,1343567,1350428,0.994919,0.95,pass
+Arrive and browse,page_view,ga_session_id,event_param,1350428,1350428,1,0.95,pass
+Search,view_search_results,search_term,event_param,26172,26172,1,0.95,pass
+Search,view_search_results,ga_session_id,event_param,26172,26172,1,0.95,pass
+Product,view_item,items,items,241876,386068,0.626511,0.95,fail
+Basket,add_to_cart,items,items,58543,58543,1,0.95,pass
+Checkout,begin_checkout,items,items,31991,38757,0.825425,0.95,fail
+Checkout,add_shipping_info,ga_session_id,event_param,19722,19722,1,0.95,pass
+Checkout,add_payment_info,ga_session_id,event_param,13899,13899,1,0.95,pass
+Purchase,purchase,transaction_id,ecommerce,4786,5692,0.840829,0.95,fail
+Purchase,purchase,purchase_revenue_in_usd,ecommerce,5242,5692,0.920942,0.95,fail
+Purchase,purchase,items,items,5690,5692,0.999649,0.95,pass

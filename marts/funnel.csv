@@ -1,0 +1,78 @@
+breakdown,group,step_order,step,sessions,rate_from_start,rate_from_previous
+overall,all sessions,0,Started a visit,244763,1,1
+overall,all sessions,1,Viewed products,49311,0.201464,0.201464
+overall,all sessions,2,Added to basket,13478,0.0550655,0.273326
+overall,all sessions,3,Began checkout,5263,0.0215024,0.390488
+overall,all sessions,4,Added delivery details,5263,0.0215024,1
+overall,all sessions,5,Added payment details,3400,0.013891,0.646019
+overall,all sessions,6,Purchased,2404,0.00982175,0.707059
+device,desktop,0,Started a visit,141964,1,1
+device,desktop,1,Viewed products,28800,0.202868,0.202868
+device,desktop,2,Added to basket,7813,0.0550351,0.271285
+device,desktop,3,Began checkout,3044,0.0214421,0.389607
+device,desktop,4,Added delivery details,3044,0.0214421,1
+device,desktop,5,Added payment details,1952,0.01375,0.641261
+device,desktop,6,Purchased,1368,0.00963625,0.70082
+device,mobile,0,Started a visit,97338,1,1
+device,mobile,1,Viewed products,19427,0.199583,0.199583
+device,mobile,2,Added to basket,5378,0.0552508,0.276831
+device,mobile,3,Began checkout,2105,0.0216257,0.391409
+device,mobile,4,Added delivery details,2105,0.0216257,1
+device,mobile,5,Added payment details,1368,0.0140541,0.649881
+device,mobile,6,Purchased,982,0.0100886,0.717836
+device,tablet,0,Started a visit,5461,1,1
+device,tablet,1,Viewed products,1084,0.198498,0.198498
+device,tablet,2,Added to basket,287,0.0525545,0.26476
+device,tablet,3,Began checkout,114,0.0208753,0.397213
+device,tablet,4,Added delivery details,114,0.0208753,1
+device,tablet,5,Added payment details,80,0.0146493,0.701754
+device,tablet,6,Purchased,54,0.0098883,0.675
+visitor type,new,0,Started a visit,182655,1,1
+visitor type,new,1,Viewed products,33579,0.183838,0.183838
+visitor type,new,2,Added to basket,7892,0.0432071,0.235028
+visitor type,new,3,Began checkout,2836,0.0155265,0.359351
+visitor type,new,4,Added delivery details,2836,0.0155265,1
+visitor type,new,5,Added payment details,1379,0.00754975,0.486248
+visitor type,new,6,Purchased,954,0.00522296,0.691806
+visitor type,returning,0,Started a visit,62108,1,1
+visitor type,returning,1,Viewed products,15732,0.253301,0.253301
+visitor type,returning,2,Added to basket,5586,0.0899401,0.355072
+visitor type,returning,3,Began checkout,2427,0.0390771,0.434479
+visitor type,returning,4,Added delivery details,2427,0.0390771,1
+visitor type,returning,5,Added payment details,2021,0.0325401,0.832715
+visitor type,returning,6,Purchased,1450,0.0233464,0.717467
+channel,organic search,0,Started a visit,84338,1,1
+channel,organic search,1,Viewed products,16580,0.19659,0.19659
+channel,organic search,2,Added to basket,4243,0.0503095,0.255911
+channel,organic search,3,Began checkout,1610,0.0190899,0.379449
+channel,organic search,4,Added delivery details,1610,0.0190899,1
+channel,organic search,5,Added payment details,1000,0.0118571,0.621118
+channel,organic search,6,Purchased,694,0.00822879,0.694
+channel,direct,0,Started a visit,56828,1,1
+channel,direct,1,Viewed products,11303,0.198898,0.198898
+channel,direct,2,Added to basket,3100,0.0545506,0.274263
+channel,direct,3,Began checkout,1214,0.0213627,0.391613
+channel,direct,4,Added delivery details,1214,0.0213627,1
+channel,direct,5,Added payment details,761,0.0133913,0.626853
+channel,direct,6,Purchased,524,0.00922081,0.688568
+channel,other or unknown,0,Started a visit,50277,1,1
+channel,other or unknown,1,Viewed products,10426,0.207371,0.207371
+channel,other or unknown,2,Added to basket,3041,0.0604849,0.291675
+channel,other or unknown,3,Began checkout,1232,0.0245042,0.40513
+channel,other or unknown,4,Added delivery details,1232,0.0245042,1
+channel,other or unknown,5,Added payment details,822,0.0163494,0.667208
+channel,other or unknown,6,Purchased,588,0.0116952,0.715328
+channel,referral,0,Started a visit,42481,1,1
+channel,referral,1,Viewed products,9008,0.212048,0.212048
+channel,referral,2,Added to basket,2585,0.0608507,0.286967
+channel,referral,3,Began checkout,1021,0.0240343,0.394971
+channel,referral,4,Added delivery details,1021,0.0240343,1
+channel,referral,5,Added payment details,708,0.0166663,0.693438
+channel,referral,6,Purchased,517,0.0121701,0.730226
+channel,paid search,0,Started a visit,10839,1,1
+channel,paid search,1,Viewed products,1994,0.183965,0.183965
+channel,paid search,2,Added to basket,509,0.0469601,0.255266
+channel,paid search,3,Began checkout,186,0.0171603,0.365422
+channel,paid search,4,Added delivery details,186,0.0171603,1
+channel,paid search,5,Added payment details,109,0.0100563,0.586022
+channel,paid search,6,Purchased,81,0.00747301,0.743119

@@ -1,0 +1,633 @@
+{
+  "source": "the real GA4 export",
+  "overview": {
+    "first_day": "2020-11-01",
+    "last_day": "2021-01-31",
+    "events": 4295584,
+    "sessions": 360129,
+    "users": 270154,
+    "purchasing_sessions": 4446,
+    "orders": 4922,
+    "revenue_usd": 340647.0,
+    "conversion": 0.012345576168539606,
+    "conversion_lo": 0.011990099512981847,
+    "conversion_hi": 0.01271145623179709,
+    "revenue_per_order": 69.20906135717188,
+    "search_share": 0.04364824826659336,
+    "engaged_share": 0.8888370556106284,
+    "device_mix": {
+      "desktop": 0.5801865442660824,
+      "mobile": 0.39759364005675746,
+      "tablet": 0.02221981567716013
+    },
+    "country_mix": {
+      "United States": 0.4391620780331492,
+      "India": 0.09376917715596356,
+      "Canada": 0.07448442086030284,
+      "United Kingdom": 0.03145261836730727,
+      "France": 0.019887318155438746
+    },
+    "channel_mix": {
+      "organic search": 0.3411027715068767,
+      "direct": 0.2317475126968392,
+      "other or unknown": 0.20738957429143445,
+      "referral": 0.17639234829741565,
+      "paid search": 0.043367793207434
+    }
+  },
+  "window": {
+    "start": "2020-11-26",
+    "first_day": "2020-11-26",
+    "last_day": "2021-01-24",
+    "sessions": 244763,
+    "excluded_weeks": [
+      "2021-W04"
+    ],
+    "detected": true
+  },
+  "window_overview": {
+    "first_day": "2020-11-26",
+    "last_day": "2021-01-24",
+    "events": 4295584,
+    "sessions": 244763,
+    "users": 190389,
+    "purchasing_sessions": 3158,
+    "orders": 3505,
+    "revenue_usd": 243310.0,
+    "conversion": 0.012902276896426338,
+    "conversion_lo": 0.012462776423680332,
+    "conversion_hi": 0.013357066742796683,
+    "revenue_per_order": 69.41797432239657,
+    "search_share": 0.04340525324497575,
+    "engaged_share": 0.9022482973325217,
+    "device_mix": {
+      "desktop": 0.5800059649538534,
+      "mobile": 0.39768265628383376,
+      "tablet": 0.02231137876231293
+    },
+    "country_mix": {
+      "United States": 0.43870192798748175,
+      "India": 0.09364568991228249,
+      "Canada": 0.07506445010070967,
+      "United Kingdom": 0.03143448969002668,
+      "France": 0.02008064944456474
+    },
+    "channel_mix": {
+      "organic search": 0.34457005348030545,
+      "direct": 0.23217561477837745,
+      "other or unknown": 0.20541094855023023,
+      "referral": 0.1735597292074374,
+      "paid search": 0.04428365398364949
+    }
+  },
+  "orders": {
+    "purchase_events": 5692,
+    "repeats": 320,
+    "empty": 450,
+    "orders": 4922,
+    "orders_without_id": 456,
+    "conversion_orders": 0.012902276896426338,
+    "conversion_raw_events": 0.01354371371489972
+  },
+  "revenue_gap": {
+    "match": 4521,
+    "above": 362,
+    "below": 359,
+    "median_gap": 0.02
+  },
+  "held_weeks": [
+    "2021-W04"
+  ],
+  "audit": [
+    {
+      "check": "events_missing_session_id",
+      "question": "Can every event be joined to a visit?",
+      "owner": "engineering",
+      "severity": "high",
+      "numerator": 0,
+      "denominator": 4295584,
+      "rate": 0.0,
+      "threshold": 0.005,
+      "status": "pass"
+    },
+    {
+      "check": "sessions_without_session_start",
+      "question": "Does every visit record its start?",
+      "owner": "engineering",
+      "severity": "high",
+      "numerator": 5272,
+      "denominator": 360129,
+      "rate": 0.014639198731565634,
+      "threshold": 0.02,
+      "status": "pass"
+    },
+    {
+      "check": "sessions_with_repeated_session_start",
+      "question": "Is any visit's start recorded twice?",
+      "owner": "engineering",
+      "severity": "medium",
+      "numerator": 105,
+      "denominator": 360129,
+      "rate": 0.0002915621902151729,
+      "threshold": 0.01,
+      "status": "pass"
+    },
+    {
+      "check": "purchases_missing_transaction_id",
+      "question": "Can every order be counted once?",
+      "owner": "engineering",
+      "severity": "high",
+      "numerator": 906,
+      "denominator": 5692,
+      "rate": 0.15917076598735067,
+      "threshold": 0.005,
+      "status": "fail"
+    },
+    {
+      "check": "duplicate_purchase_events",
+      "question": "Is any order sent more than once by the same user?",
+      "owner": "engineering",
+      "severity": "high",
+      "numerator": 320,
+      "denominator": 5692,
+      "rate": 0.05621925509486999,
+      "threshold": 0.002,
+      "status": "fail"
+    },
+    {
+      "check": "purchases_without_revenue",
+      "question": "Does every order carry its value?",
+      "owner": "engineering",
+      "severity": "high",
+      "numerator": 450,
+      "denominator": 5692,
+      "rate": 0.07905832747716093,
+      "threshold": 0.005,
+      "status": "fail"
+    },
+    {
+      "check": "ecommerce_events_without_items",
+      "question": "Do product, basket and order events say which products?",
+      "owner": "engineering",
+      "severity": "medium",
+      "numerator": 150960,
+      "denominator": 489060,
+      "rate": 0.30867378235799287,
+      "threshold": 0.01,
+      "status": "fail"
+    },
+    {
+      "check": "add_to_cart_with_many_products",
+      "question": "Does an add-to-basket event list what was added, not a whole page of products?",
+      "owner": "engineering",
+      "severity": "medium",
+      "numerator": 56158,
+      "denominator": 58543,
+      "rate": 0.9592607143467196,
+      "threshold": 0.05,
+      "status": "fail"
+    },
+    {
+      "check": "purchase_sessions_without_checkout",
+      "question": "Does every buyer pass through checkout as tracked?",
+      "owner": "product and engineering",
+      "severity": "medium",
+      "numerator": 0,
+      "denominator": 4446,
+      "rate": 0.0,
+      "threshold": 0.02,
+      "status": "pass"
+    },
+    {
+      "check": "searches_without_term",
+      "question": "Does every search record what was searched for?",
+      "owner": "engineering",
+      "severity": "medium",
+      "numerator": 0,
+      "denominator": 26172,
+      "rate": 0.0,
+      "threshold": 0.01,
+      "status": "pass"
+    },
+    {
+      "check": "search_terms_obfuscated",
+      "question": "How many search terms did Google's obfuscation replace?",
+      "owner": "dataset, not a tracking fault",
+      "severity": "info",
+      "numerator": 26172,
+      "denominator": 26172,
+      "rate": 1.0,
+      "threshold": null,
+      "status": "info"
+    },
+    {
+      "check": "page_views_without_location",
+      "question": "Does every page view say which page?",
+      "owner": "engineering",
+      "severity": "medium",
+      "numerator": 0,
+      "denominator": 1350428,
+      "rate": 0.0,
+      "threshold": 0.005,
+      "status": "pass"
+    },
+    {
+      "check": "purchase_revenue_mismatch",
+      "question": "Does each order's value match the sum of its items (within 1%)?",
+      "owner": "check the direction of the gaps first",
+      "severity": "info",
+      "numerator": 721,
+      "denominator": 5242,
+      "rate": 0.13754292254864556,
+      "threshold": null,
+      "status": "info"
+    },
+    {
+      "check": "tracking_plan_fields_below_target",
+      "question": "Is every tracking-plan field on at least 95% of its events?",
+      "owner": "engineering",
+      "severity": "medium",
+      "numerator": 4,
+      "denominator": 15,
+      "rate": 0.26666666666666666,
+      "threshold": 0.0,
+      "status": "fail"
+    }
+  ],
+  "funnel_overall": [
+    {
+      "breakdown": "overall",
+      "group": "all sessions",
+      "step_order": 0,
+      "step": "Started a visit",
+      "sessions": 244763,
+      "rate_from_start": 1.0,
+      "rate_from_previous": 1.0
+    },
+    {
+      "breakdown": "overall",
+      "group": "all sessions",
+      "step_order": 1,
+      "step": "Viewed products",
+      "sessions": 49311,
+      "rate_from_start": 0.20146427360344496,
+      "rate_from_previous": 0.20146427360344496
+    },
+    {
+      "breakdown": "overall",
+      "group": "all sessions",
+      "step_order": 2,
+      "step": "Added to basket",
+      "sessions": 13478,
+      "rate_from_start": 0.05506551235276574,
+      "rate_from_previous": 0.27332643832005027
+    },
+    {
+      "breakdown": "overall",
+      "group": "all sessions",
+      "step_order": 3,
+      "step": "Began checkout",
+      "sessions": 5263,
+      "rate_from_start": 0.021502432965766885,
+      "rate_from_previous": 0.3904882029974774
+    },
+    {
+      "breakdown": "overall",
+      "group": "all sessions",
+      "step_order": 4,
+      "step": "Added delivery details",
+      "sessions": 5263,
+      "rate_from_start": 0.021502432965766885,
+      "rate_from_previous": 1.0
+    },
+    {
+      "breakdown": "overall",
+      "group": "all sessions",
+      "step_order": 5,
+      "step": "Added payment details",
+      "sessions": 3400,
+      "rate_from_start": 0.013890988425538174,
+      "rate_from_previous": 0.6460193805814174
+    },
+    {
+      "breakdown": "overall",
+      "group": "all sessions",
+      "step_order": 6,
+      "step": "Purchased",
+      "sessions": 2404,
+      "rate_from_start": 0.009821745933821697,
+      "rate_from_previous": 0.7070588235294117
+    }
+  ],
+  "biggest_drop": {
+    "from_step": "Started a visit",
+    "to_step": "Viewed products",
+    "kept": 0.20146427360344496,
+    "sessions_before": 244763,
+    "sessions_after": 49311
+  },
+  "search": {
+    "enough": true,
+    "search_sessions": 10624,
+    "other_sessions": 234139,
+    "search_share": 0.04340525324497575,
+    "naive": {
+      "p1": 0.040286144578313254,
+      "p0": 0.01165974058144948,
+      "diff": 0.028626403996863774,
+      "lo": 0.024862228516080644,
+      "hi": 0.032390579477646904,
+      "p_value": 3.1410720651636956e-144,
+      "rel": 2.45514930601527
+    },
+    "adjusted": {
+      "diff": 0.02925678253943357,
+      "se": 0.001873949477452596,
+      "lo": 0.02558390905477883,
+      "hi": 0.03292965602408831,
+      "coverage": 1.0,
+      "strata_used": 40,
+      "strata_total": 48
+    },
+    "share_explained": -0.02202087774066408,
+    "product_view_rate_search": 0.47279743975903615,
+    "product_view_rate_other": 0.18915259738873064,
+    "controlled_for": [
+      "device_category",
+      "user_type",
+      "medium_group",
+      "prior_purchaser"
+    ]
+  },
+  "follow_up": {
+    "enough": true,
+    "sizing_weeks": 3,
+    "weekly_searching_users": 1125.6666666666667,
+    "baseline_weekly_conversion": 0.03701510216168197,
+    "baseline_product_view": 0.4293751850755108,
+    "plans": [
+      {
+        "metric": "Bought within the week",
+        "baseline": 0.03701510216168197,
+        "relative_lift": 0.05,
+        "users_per_arm": 167280,
+        "weeks": 298
+      },
+      {
+        "metric": "Bought within the week",
+        "baseline": 0.03701510216168197,
+        "relative_lift": 0.1,
+        "users_per_arm": 42798,
+        "weeks": 77
+      },
+      {
+        "metric": "Bought within the week",
+        "baseline": 0.03701510216168197,
+        "relative_lift": 0.2,
+        "users_per_arm": 11187,
+        "weeks": 20
+      },
+      {
+        "metric": "Saw products in a search session",
+        "baseline": 0.4293751850755108,
+        "relative_lift": 0.05,
+        "users_per_arm": 8392,
+        "weeks": 15
+      },
+      {
+        "metric": "Saw products in a search session",
+        "baseline": 0.4293751850755108,
+        "relative_lift": 0.1,
+        "users_per_arm": 2107,
+        "weeks": 4
+      },
+      {
+        "metric": "Saw products in a search session",
+        "baseline": 0.4293751850755108,
+        "relative_lift": 0.2,
+        "users_per_arm": 530,
+        "weeks": 1
+      }
+    ]
+  },
+  "checkout": {
+    "p1": 0.47352941176470587,
+    "p0": 0.4520582329317269,
+    "diff": 0.021471178832978943,
+    "lo": -0.00283776786517273,
+    "hi": 0.04578012553113062,
+    "p_value": 0.08330479708097521,
+    "rel": 0.047496488878727434,
+    "mobile": 0.47352941176470587,
+    "desktop": 0.4520582329317269,
+    "mobile_n": 2720,
+    "desktop_n": 3984
+  },
+  "windows": [
+    {
+      "window": "Baseline: three weeks before Thanksgiving",
+      "role": "baseline",
+      "start": "2020-11-02",
+      "end": "2020-11-22",
+      "days": 21,
+      "days_excluded": 0,
+      "sessions_per_day": 3495.8571428571427,
+      "conversion": 0.01280427172299184,
+      "conversion_change_pp": 0.0,
+      "conversion_change_rel": 0.0,
+      "conversion_p_value": 1.0,
+      "revenue_per_order": 69.68247821878025,
+      "share_orders_without_id": 0.42787996127783157,
+      "checkout_completion": null,
+      "checkout_completion_change_pp": null,
+      "checkout_completion_p_value": null,
+      "search_share": 0.04555051557626034
+    },
+    {
+      "window": "Black Friday to Cyber Monday",
+      "role": "event",
+      "start": "2020-11-27",
+      "end": "2020-11-30",
+      "days": 4,
+      "days_excluded": 0,
+      "sessions_per_day": 3800.0,
+      "conversion": 0.021052631578947368,
+      "conversion_change_pp": 0.008248359855955527,
+      "conversion_change_rel": 0.644188129899216,
+      "conversion_p_value": 5.363276619833379e-15,
+      "revenue_per_order": 82.46491228070175,
+      "share_orders_without_id": 0.0,
+      "checkout_completion": 0.44382801664355065,
+      "checkout_completion_change_pp": 0.12754268689927073,
+      "checkout_completion_p_value": 9.166895666463964e-11,
+      "search_share": 0.05026315789473684
+    },
+    {
+      "window": "Run-up to Christmas",
+      "role": "event",
+      "start": "2020-12-07",
+      "end": "2020-12-20",
+      "days": 14,
+      "days_excluded": 0,
+      "sessions_per_day": 5152.857142857143,
+      "conversion": 0.017687829220959246,
+      "conversion_change_pp": 0.004883557497967405,
+      "conversion_change_rel": 0.3814006453173203,
+      "conversion_p_value": 2.7886427492946606e-14,
+      "revenue_per_order": 71.31405514458642,
+      "share_orders_without_id": 0.0,
+      "checkout_completion": 0.4913361571043512,
+      "checkout_completion_change_pp": 0.17505082736007127,
+      "checkout_completion_p_value": 1.9169298852446162e-40,
+      "search_share": 0.043484890490712504
+    },
+    {
+      "window": "Christmas to New Year",
+      "role": "event",
+      "start": "2020-12-24",
+      "end": "2021-01-01",
+      "days": 9,
+      "days_excluded": 0,
+      "sessions_per_day": 2858.5555555555557,
+      "conversion": 0.006918801259377308,
+      "conversion_change_pp": -0.0058854704636145325,
+      "conversion_change_rel": -0.4596489820695039,
+      "conversion_p_value": 1.4355964179597705e-14,
+      "revenue_per_order": 64.47619047619048,
+      "share_orders_without_id": 0.0,
+      "checkout_completion": 0.5297619047619048,
+      "checkout_completion_change_pp": 0.21347657501762485,
+      "checkout_completion_p_value": 4.461629714741247e-15,
+      "search_share": 0.04096863217631282
+    },
+    {
+      "window": "January",
+      "role": "event",
+      "start": "2021-01-04",
+      "end": "2021-01-31",
+      "days": 21,
+      "days_excluded": 7,
+      "sessions_per_day": 4010.190476190476,
+      "conversion": 0.008419027715106752,
+      "conversion_change_pp": -0.004385244007885088,
+      "conversion_change_rel": -0.34248289186262554,
+      "conversion_p_value": 1.3915415949490506e-17,
+      "revenue_per_order": 64.8110964332893,
+      "share_orders_without_id": 0.0,
+      "checkout_completion": 0.47647849462365593,
+      "checkout_completion_change_pp": 0.16019316487937602,
+      "checkout_completion_p_value": 1.472616877707683e-25,
+      "search_share": 0.0425344954520626
+    }
+  ],
+  "segments": [
+    {
+      "segment": "All sessions",
+      "definition": "TRUE",
+      "sessions": 244763,
+      "share_of_sessions": 1.0,
+      "purchasing_sessions": 3158,
+      "conversion": 0.012902276896426338,
+      "conversion_lo": 0.012462776423680332,
+      "conversion_hi": 0.013357066742796683,
+      "revenue_usd": 243310.0,
+      "revenue_per_session": 0.994063645240498
+    },
+    {
+      "segment": "Searched",
+      "definition": "has_search",
+      "sessions": 10624,
+      "share_of_sessions": 0.04340525324497575,
+      "purchasing_sessions": 428,
+      "conversion": 0.040286144578313254,
+      "conversion_lo": 0.03671031690308934,
+      "conversion_hi": 0.04419430160785572,
+      "revenue_usd": 36434.0,
+      "revenue_per_session": 3.4294051204819276
+    },
+    {
+      "segment": "Did not search",
+      "definition": "NOT has_search",
+      "sessions": 234139,
+      "share_of_sessions": 0.9565947467550242,
+      "purchasing_sessions": 2730,
+      "conversion": 0.01165974058144948,
+      "conversion_lo": 0.01123286289679701,
+      "conversion_hi": 0.012102642151225711,
+      "revenue_usd": 206876.0,
+      "revenue_per_session": 0.8835606199736055
+    },
+    {
+      "segment": "Viewed products, added nothing",
+      "definition": "has_view_item AND NOT has_add_to_cart",
+      "sessions": 35833,
+      "share_of_sessions": 0.14639876125067922,
+      "purchasing_sessions": 652,
+      "conversion": 0.01819551809784277,
+      "conversion_lo": 0.0168623860279297,
+      "conversion_hi": 0.019631942310785785,
+      "revenue_usd": 45340.0,
+      "revenue_per_session": 1.2653140959450786
+    },
+    {
+      "segment": "Abandoned basket",
+      "definition": "has_add_to_cart AND NOT has_purchase",
+      "sessions": 11084,
+      "share_of_sessions": 0.045284622267254444,
+      "purchasing_sessions": 0,
+      "conversion": 0.0,
+      "conversion_lo": 0.0,
+      "conversion_hi": 0.00034645686763839253,
+      "revenue_usd": 0.0,
+      "revenue_per_session": 0.0
+    },
+    {
+      "segment": "Abandoned checkout",
+      "definition": "has_begin_checkout AND NOT has_purchase",
+      "sessions": 3694,
+      "share_of_sessions": 0.015092150365864122,
+      "purchasing_sessions": 0,
+      "conversion": 0.0,
+      "conversion_lo": 0.0,
+      "conversion_hi": 0.0010388381609846601,
+      "revenue_usd": 0.0,
+      "revenue_per_session": 0.0
+    },
+    {
+      "segment": "New visitors on mobile",
+      "definition": "user_type = 'new' AND device_category = 'mobile'",
+      "sessions": 72469,
+      "share_of_sessions": 0.2960782471206841,
+      "purchasing_sessions": 507,
+      "conversion": 0.006996094881949523,
+      "conversion_lo": 0.006414838968130996,
+      "conversion_hi": 0.007629614627620936,
+      "revenue_usd": 33197.0,
+      "revenue_per_session": 0.45808552622500653
+    },
+    {
+      "segment": "Returning previous buyers",
+      "definition": "prior_purchaser",
+      "sessions": 3780,
+      "share_of_sessions": 0.015443510661333617,
+      "purchasing_sessions": 308,
+      "conversion": 0.08148148148148149,
+      "conversion_lo": 0.07317926445701972,
+      "conversion_hi": 0.0906334812846794,
+      "revenue_usd": 25183.0,
+      "revenue_per_session": 6.662169312169312
+    },
+    {
+      "segment": "Paid search visitors",
+      "definition": "medium_group = 'paid search'",
+      "sessions": 10839,
+      "share_of_sessions": 0.04428365398364949,
+      "purchasing_sessions": 106,
+      "conversion": 0.009779499953870284,
+      "conversion_lo": 0.008092797975998139,
+      "conversion_hi": 0.011813557718717498,
+      "revenue_usd": 6472.0,
+      "revenue_per_session": 0.5971030537872497
+    }
+  ]
+}

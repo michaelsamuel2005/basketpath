@@ -1,0 +1,15 @@
+check,question,owner,severity,numerator,denominator,rate,threshold,status
+events_missing_session_id,Can every event be joined to a visit?,engineering,high,0,4295584,0,0.005,pass
+sessions_without_session_start,Does every visit record its start?,engineering,high,5272,360129,0.0146392,0.02,pass
+sessions_with_repeated_session_start,Is any visit's start recorded twice?,engineering,medium,105,360129,0.000291562,0.01,pass
+purchases_missing_transaction_id,Can every order be counted once?,engineering,high,906,5692,0.159171,0.005,fail
+duplicate_purchase_events,Is any order sent more than once by the same user?,engineering,high,320,5692,0.0562193,0.002,fail
+purchases_without_revenue,Does every order carry its value?,engineering,high,450,5692,0.0790583,0.005,fail
+ecommerce_events_without_items,"Do product, basket and order events say which products?",engineering,medium,150960,489060,0.308674,0.01,fail
+add_to_cart_with_many_products,"Does an add-to-basket event list what was added, not a whole page of products?",engineering,medium,56158,58543,0.959261,0.05,fail
+purchase_sessions_without_checkout,Does every buyer pass through checkout as tracked?,product and engineering,medium,0,4446,0,0.02,pass
+searches_without_term,Does every search record what was searched for?,engineering,medium,0,26172,0,0.01,pass
+search_terms_obfuscated,How many search terms did Google's obfuscation replace?,"dataset, not a tracking fault",info,26172,26172,1,,info
+page_views_without_location,Does every page view say which page?,engineering,medium,0,1350428,0,0.005,pass
+purchase_revenue_mismatch,Does each order's value match the sum of its items (within 1%)?,check the direction of the gaps first,info,721,5242,0.137543,,info
+tracking_plan_fields_below_target,Is every tracking-plan field on at least 95% of its events?,engineering,medium,4,15,0.266667,0,fail

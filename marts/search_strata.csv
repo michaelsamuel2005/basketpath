@@ -1,0 +1,49 @@
+device_category,user_type,medium_group,prior_purchaser,n_search,x_search,n_other,x_other
+desktop,new,direct,False,1174,18,24089,127
+desktop,new,organic search,False,1746,37,38741,210
+desktop,new,organic search,True,0,0,3,0
+desktop,new,other or unknown,False,831,15,18399,115
+desktop,new,paid search,False,245,8,5538,38
+desktop,new,referral,False,665,17,14651,75
+desktop,new,referral,True,0,0,1,0
+desktop,returning,direct,False,282,21,7063,181
+desktop,returning,direct,True,19,3,464,30
+desktop,returning,organic search,False,324,27,7483,206
+desktop,returning,organic search,True,14,4,454,32
+desktop,returning,other or unknown,False,379,34,8910,241
+desktop,returning,other or unknown,True,26,4,557,48
+desktop,returning,paid search,False,20,5,503,19
+desktop,returning,paid search,True,1,1,21,2
+desktop,returning,referral,False,348,40,8415,204
+desktop,returning,referral,True,20,5,578,34
+mobile,new,direct,False,794,21,16437,115
+mobile,new,organic search,False,1260,31,26454,160
+mobile,new,other or unknown,False,600,17,12637,74
+mobile,new,other or unknown,True,0,0,1,0
+mobile,new,paid search,False,180,4,3694,19
+mobile,new,referral,False,489,7,9923,59
+mobile,returning,direct,False,158,12,4736,104
+mobile,returning,direct,True,7,2,312,25
+mobile,returning,organic search,False,237,18,5394,135
+mobile,returning,organic search,True,19,7,383,34
+mobile,returning,other or unknown,False,238,18,6144,162
+mobile,returning,other or unknown,True,15,6,391,28
+mobile,returning,paid search,False,17,2,337,4
+mobile,returning,paid search,True,0,0,21,2
+mobile,returning,referral,False,253,32,5809,155
+mobile,returning,referral,True,9,2,389,33
+tablet,new,direct,False,47,1,933,3
+tablet,new,organic search,False,66,1,1474,9
+tablet,new,other or unknown,False,37,2,752,3
+tablet,new,paid search,False,13,0,232,2
+tablet,new,referral,False,30,1,519,3
+tablet,returning,direct,False,11,1,288,9
+tablet,returning,direct,True,1,1,13,1
+tablet,returning,organic search,False,10,0,263,6
+tablet,returning,organic search,True,0,0,13,0
+tablet,returning,other or unknown,False,15,1,326,10
+tablet,returning,other or unknown,True,0,0,19,2
+tablet,returning,paid search,False,2,0,12,0
+tablet,returning,paid search,True,0,0,3,0
+tablet,returning,referral,False,22,2,334,9
+tablet,returning,referral,True,0,0,26,2

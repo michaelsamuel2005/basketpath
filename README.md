@@ -21,8 +21,14 @@ with a data-quality gate. Its tidy marts are ready for Tableau.
 ## Results
 
 <!-- results:start -->
-Not yet run on the real export. Follow **Run it on the real data** below: `python -m basketpath.build`
-replaces this section with the headline numbers and writes the full readout to `reports/findings.md`.
+- **Data:** 360,129 sessions from 270,154 users, 2020-11-01 to 2021-01-31. Journey analyses use 244,763 sessions from 2020-11-26, when every journey event was tracked, excluding held week 2021-W04.
+- **Orders:** 5,692 purchase events become 4,922 orders after removing 320 double-fired repeats and 450 empty events.
+- **Tracking audit:** 6 of 14 checks failed: purchases missing transaction id, duplicate purchase events, purchases without revenue, ecommerce events without items, add to cart with many products, tracking plan fields below target.
+- **Conversion:** 1.29% of sessions (95% CI 1.25% to 1.34%). Biggest drop: started a visit to viewed products, where 20.1% continue.
+- **Search:** used in 4.3% of sessions. Naive conversion gap +2.86 pp; like for like +2.93 pp (95% CI +2.56 pp to +3.29 pp).
+- **Checkout completion:** mobile 47.4%, desktop 45.2% (+2.15 pp).
+
+Full readout: [reports/findings.md](reports/findings.md).
 <!-- results:end -->
 
 ## Run it on the real data
