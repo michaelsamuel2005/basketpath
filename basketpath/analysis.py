@@ -179,24 +179,33 @@ def search_vs_intent(con, src: str = "sessions", min_search_sessions: int = 100)
 def follow_up_test(con, src: str = "sessions", lifts=(0.05, 0.10, 0.20)) -> dict:
     """Size the experiment that would settle the search question, from the 'sizing' weeks in trading_windows.
 
-    The unit is the user, so repeat visits by one person need no clustering correction."""
+    Two candidate primary metrics: buying within the week, and the closer-in effect of search, seeing products in
+    a search session. The unit is the user, so repeat visits by one person need no clustering correction."""
     df = con.execute(f"""
         WITH w AS (
           SELECT date_trunc('week', s.session_date) AS wk, s.user_pseudo_id,
-                 bool_or(s.has_search) AS searched, bool_or(s.has_purchase) AS bought
+                 bool_or(s.has_search) AS searched, bool_or(s.has_purchase) AS bought,
+                 bool_or(s.has_search AND s.has_view_item) AS saw_products
           FROM {src} AS s JOIN trading_windows AS t
             ON t.role = 'sizing' AND s.session_date BETWEEN t.start_date AND t.end_date
           GROUP BY ALL)
-        SELECT wk, SUM(CAST(searched AS INT)) AS searchers, SUM(CAST(searched AND bought AS INT)) AS buyers
+        SELECT wk, SUM(CAST(searched AS INT)) AS searchers, SUM(CAST(searched AND bought AS INT)) AS buyers,
+               SUM(CAST(saw_products AS INT)) AS viewers
         FROM w GROUP BY wk ORDER BY wk""").df()
-    searchers, buyers = int(df["searchers"].sum()), int(df["buyers"].sum())
+    searchers, buyers, viewers = (int(df[c].sum()) for c in ("searchers", "buyers", "viewers"))
     if not searchers or not buyers:
         return dict(enough=False)
-    p0, weekly = buyers / searchers, searchers / len(df)
-    plans = [dict(relative_lift=lift, users_per_arm=stats.n_per_arm(p0, lift),
-                  weeks=math.ceil(2 * stats.n_per_arm(p0, lift) / weekly)) for lift in lifts]
+    weekly = searchers / len(df)
+    metrics = [("Bought within the week", buyers / searchers), ("Saw products in a search session", viewers / searchers)]
+    plans = []
+    for metric, p0 in metrics:
+        for lift in lifts:
+            if 0 < p0 * (1 + lift) < 1:
+                n = stats.n_per_arm(p0, lift)
+                plans.append(dict(metric=metric, baseline=p0, relative_lift=lift, users_per_arm=n,
+                                  weeks=math.ceil(2 * n / weekly)))
     return dict(enough=True, sizing_weeks=len(df), weekly_searching_users=weekly,
-                baseline_weekly_conversion=p0, plans=plans)
+                baseline_weekly_conversion=buyers / searchers, baseline_product_view=viewers / searchers, plans=plans)
 
 
 def checkout_by_device(con, src: str = "sessions") -> tuple[pd.DataFrame, dict]:
@@ -266,8 +275,11 @@ def daily_kpis(con, journey_start: str | None = None) -> pd.DataFrame:
     return df
 
 
-def windows(con, daily: pd.DataFrame, excluded_weeks=()) -> pd.DataFrame:
-    """Peak-trading windows against a quiet baseline, leaving out any week the gate held."""
+def windows(con, daily: pd.DataFrame, excluded_weeks=(), journey_start: str | None = None) -> pd.DataFrame:
+    """Peak-trading windows against a quiet baseline, leaving out any week the gate held.
+
+    Conversion counts orders, tracked throughout, so every window is compared. Checkout completion depends on
+    checkout tracking, so it is reported only for windows that start inside the journey window."""
     held = set()
     for a, b in map(week_range, excluded_weeks):
         held |= set(pd.date_range(a, b))
@@ -287,6 +299,8 @@ def windows(con, daily: pd.DataFrame, excluded_weeks=()) -> pd.DataFrame:
         a = agg(w["start_date"], w["end_date"])
         conv = stats.two_proportions(a["purchasing_sessions"], a["sessions"], b["purchasing_sessions"], b["sessions"])
         comp = stats.two_proportions(a["checkout_completed"], a["checkout_sessions"], b["checkout_completed"], b["checkout_sessions"])
+        if journey_start and pd.Timestamp(w["start_date"]) < pd.Timestamp(journey_start):
+            comp = dict(p1=math.nan, diff=math.nan, p_value=math.nan)
         rows.append(dict(window=w["window_name"], role=w["role"], start=str(pd.Timestamp(w["start_date"]).date()),
                          end=str(pd.Timestamp(w["end_date"]).date()), days=a["days"], days_excluded=a["days_excluded"],
                          sessions_per_day=a["sessions"] / a["days"] if a["days"] else math.nan,

@@ -43,7 +43,7 @@ def run(raw: pathlib.Path, out: pathlib.Path, real: bool) -> dict:
     search, strata = analysis.search_vs_intent(con, A)
     chk, chk_cmp = analysis.checkout_by_device(con, A)
     segs = analysis.segments(con, A)
-    wins = analysis.windows(con, daily, held)
+    wins = analysis.windows(con, daily, held, tracking["start"])
 
     marts = out / "marts"
     marts.mkdir(parents=True, exist_ok=True)

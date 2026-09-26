@@ -1,3 +1,4 @@
+import pandas as pd
 from basketpath import analysis
 
 
@@ -45,9 +46,22 @@ def test_search_gap_is_real_but_explained_by_who_searches(fx):
 def test_follow_up_test_is_sized_from_real_baselines(fx):
     con, _, _ = fx
     f = analysis.follow_up_test(con)
-    assert f["enough"] and 0 < f["baseline_weekly_conversion"] < 1
-    sizes = [p["users_per_arm"] for p in f["plans"]]
-    assert sizes == sorted(sizes, reverse=True), "smaller lifts need more users"
+    assert f["enough"] and 0 < f["baseline_weekly_conversion"] < f["baseline_product_view"] < 1
+    for metric in {p["metric"] for p in f["plans"]}:
+        sizes = [p["users_per_arm"] for p in f["plans"] if p["metric"] == metric]
+        assert sizes == sorted(sizes, reverse=True), "smaller lifts need more users"
+    ten = {p["metric"]: p["users_per_arm"] for p in f["plans"] if p["relative_lift"] == 0.10}
+    assert ten["Saw products in a search session"] < ten["Bought within the week"], \
+        "a common outcome needs far fewer users than a rare one"
+
+
+def test_checkout_completion_is_not_compared_before_the_journey_was_tracked(fx):
+    con, _, _ = fx
+    daily = analysis.daily_kpis(con, "2020-11-26")
+    w = analysis.windows(con, daily, [], journey_start="2020-11-26").set_index("window")
+    baseline, bfcm = w.iloc[0], w.loc["Black Friday to Cyber Monday"]
+    assert baseline["role"] == "baseline" and pd.isna(baseline["checkout_completion"])
+    assert not pd.isna(baseline["conversion"]) and not pd.isna(bfcm["checkout_completion"])
 
 
 def test_segments_are_consistent_with_the_session_table(fx):

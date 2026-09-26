@@ -181,6 +181,18 @@ def findings_markdown(r: dict, real: bool) -> str:
           "| Step | Sessions | Share of all sessions | Share of previous step |", "|---|---:|---:|---:|"]
     for st in r["funnel_overall"]:
         L.append(f"| {st['step']} | {st['sessions']:,} | {pct(st['rate_from_start'], 2)} | {pct(st['rate_from_previous'])} |")
+    steps = r["funnel_overall"]
+    for before, after in zip(steps[1:], steps[2:]):
+        if before["sessions"] >= 100 and after["sessions"] == before["sessions"]:
+            L += ["", f"Every one of the {before['sessions']:,} sessions that {before['step'].lower()} also "
+                  f"{after['step'].lower()}. A real step always loses someone, so this event is probably sent "
+                  "automatically with the previous one, and the step separates no one."]
+    ordering = r["window_overview"]["purchasing_sessions"]
+    if ordering > steps[-1]["sessions"]:
+        gap = ordering - steps[-1]["sessions"]
+        L += ["", f"The nested funnel ends at {steps[-1]['sessions']:,} sessions, but {ordering:,} sessions in the window "
+              f"ordered. The other {gap:,} ({pct(gap / ordering)} of ordering sessions) are missing an earlier tracked "
+              "step, such as an `add_to_cart` event, so they count towards conversion but not the funnel's last step."]
     L += ["", "![Funnel](figures/funnel.png)", "",
           "Steps are nested: a session counts at a step only if it reached every earlier step. \"Viewed products\" means "
           "a `view_item` event, which in this export also fires on listing pages, so it measures seeing products "
@@ -198,6 +210,9 @@ def findings_markdown(r: dict, real: bool) -> str:
               f"{pp(ad['diff'])} (95% CI {pp(ad['lo'])} to {pp(ad['hi'])}), covering {pct(ad['coverage'])} of search sessions."
               + ("" if _nan(s["share_explained"]) or s["naive"]["diff"] <= 0 else
                  " The difference in who searches accounts for the whole naive gap." if s["share_explained"] >= 1 else
+                 (" Differences in device, visitor type, channel and purchase history explain none of it: like for "
+                  "like, the gap is " + ("slightly larger." if ad["diff"] > n["diff"] else "about the same."))
+                 if s["share_explained"] <= 0.05 else
                  f" The difference in who searches accounts for about {pct(s['share_explained'], 0)} of the naive gap."), ""]
         if ad["lo"] <= 0 <= ad["hi"]:
             L.append("What remains is not distinguishable from zero, so this data cannot show that search itself raises conversion.")
@@ -211,14 +226,23 @@ def findings_markdown(r: dict, real: bool) -> str:
                   f"{pct(s['product_view_rate_other'])} for other sessions."]
     L += ["", "### The experiment that would settle it", ""]
     if f.get("enough"):
-        L += [f"Randomise **users**, not sessions, who search, between current search and a changed version, and measure whether "
-              f"each buys within the week. In the {f['sizing_weeks']} sizing weeks (normal January trading, inside the "
-              f"analysis window), {f['weekly_searching_users']:,.0f} users searched each week and "
-              f"{pct(f['baseline_weekly_conversion'], 2)} of them bought.", "",
-              "| Smallest relative lift worth detecting | Users per arm | Weeks of search traffic |", "|---:|---:|---:|"]
-        L += [f"| {pct(p['relative_lift'], 0)} | {p['users_per_arm']:,} | {p['weeks']} |" for p in f["plans"]]
-        L += ["", "Two-sided test at 5% with 80% power. Guardrails: revenue per user and checkout completion. "
-              "Agree the smallest lift worth shipping before starting, and do not stop early on a promising result."]
+        L += [f"Randomise **users**, not sessions, who search, between current search and a changed version. In the "
+              f"{f['sizing_weeks']} sizing weeks (normal January trading, inside the analysis window), "
+              f"{f['weekly_searching_users']:,.0f} users searched each week: {pct(f['baseline_weekly_conversion'], 2)} "
+              f"of them bought, and {pct(f['baseline_product_view'], 2)} saw products in a search session.", "",
+              "| Primary metric | Baseline | Smallest relative lift worth detecting | Users per arm | Weeks of search traffic |",
+              "|---|---:|---:|---:|---:|"]
+        L += [f"| {p['metric']} | {pct(p['baseline'], 2)} | {pct(p['relative_lift'], 0)} | {p['users_per_arm']:,} | {p['weeks']} |"
+              for p in f["plans"]]
+        ten = {p["metric"]: p["weeks"] for p in f["plans"] if abs(p["relative_lift"] - 0.10) < 1e-9}
+        buy, see = ten.get("Bought within the week"), ten.get("Saw products in a search session")
+        if buy and see and see < buy:
+            L += ["", f"At this traffic, detecting a 10% lift in buying would take {buy} weeks, while the same lift in "
+                  f"searchers seeing products would take {see}. So the practical primary metric is seeing products after "
+                  "searching, the effect search can change directly, with buying and revenue per user as guardrails "
+                  "rather than the decision metric."]
+        L += ["", "Two-sided tests at 5% with 80% power. Agree the smallest lift worth shipping before starting, and do "
+              "not stop early on a promising result."]
     else:
         L.append("The sizing weeks hold too little search traffic to size a test.")
     L += ["", "## Finishing the shop: checkout by device", ""]
@@ -235,9 +259,11 @@ def findings_markdown(r: dict, real: bool) -> str:
         days = f"{x['days']}" + (f" ({x['days_excluded']} held)" if x["days_excluded"] else "")
         L.append(f"| {x['window']} | {days} | {x['sessions_per_day']:,.0f} | {pct(x['conversion'], 2)} | {change} | "
                  f"{pct(x['checkout_completion'])} | {money(x['revenue_per_order'])} |")
-    L += ["", "Conversion and checkout completion use events tracked throughout, so the whole period is compared, except "
-          "days in held weeks. Revenue per order in the baseline is less certain: orders without IDs there cannot be "
-          "checked for duplicates.", "", "![Conversion through peak trading](figures/daily_conversion.png)", "",
+    L += ["", "Conversion counts orders, which were tracked throughout, so every window is compared with the "
+          "pre-Thanksgiving baseline, leaving out days in held weeks. Checkout completion appears only for windows inside "
+          "the analysis window: before then checkout was not tracked the way it was later, so a comparison would measure "
+          "the tracking change, not shoppers. Orders in the baseline mostly lack IDs and cannot be checked for duplicates.",
+          "", "![Conversion through peak trading](figures/daily_conversion.png)", "",
           "## Custom segments", "", "| Segment | Sessions | Share of sessions | Conversion | Revenue per session |",
           "|---|---:|---:|---:|---:|"]
     for g in r["segments"]:
