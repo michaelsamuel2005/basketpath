@@ -21,7 +21,7 @@ from .schema import EVENT_COLUMNS, ITEM_COLUMNS
 
 FIRST, N_DAYS = date(2020, 11, 1), 92
 PEAK = {date(2020, 11, 27), date(2020, 11, 28), date(2020, 11, 29), date(2020, 11, 30)}
-GATE_WEEK = (date(2020, 12, 7), date(2020, 12, 13))  # missing transaction IDs are planted in this week only
+GATE_WEEK = (date(2020, 12, 7), date(2020, 12, 13))  # empty purchase events (no ID, no revenue) are planted here only
 DEVICES, DEVICE_P = ["desktop", "mobile", "tablet"], [0.55, 0.42, 0.03]
 MEDIA = [("organic", "google"), ("(none)", "(direct)"), ("referral", "shop.googlemerchandisestore.com"),
          ("cpc", "google"), ("<Other>", "<Other>")]
@@ -32,7 +32,6 @@ PAGES = {"/": "Home", "/Google+Redesign/Apparel": "Apparel", "/Google+Redesign/D
          "/Google+Redesign/Bags": "Bags", "/Google+Redesign/Office": "Office", "/basket.html": "Shopping Cart"}
 TERMS = ["hoodie", "mug", "backpack", "stickers", "water bottle", "notebook", "t-shirt", "cap"]
 CATEGORIES = ["Apparel", "Drinkware", "Bags", "Office", "Lifestyle", "Stationery"]
-INT_COLS = [c for c, t in EVENT_COLUMNS.items() if t == "int"]
 PARAMS = ["ga_session_id", "ga_session_number", "page_location", "page_title",
           "search_term", "engagement_time_msec", "session_engaged"]
 
@@ -42,8 +41,9 @@ PLANTED = {  # audit check -> count. The audit must find exactly these.
     "sessions_with_repeated_session_start": 15,
     "purchases_missing_transaction_id": 25,
     "duplicate_purchase_events": 12,
-    "purchases_without_revenue": 8,
+    "purchases_without_revenue": 33,   # 8 with a valid ID, plus the 25 empty events in the gate week
     "ecommerce_events_without_items": 30,
+    "add_to_cart_with_many_products": 7,
     "purchase_sessions_without_checkout": 20,
     "searches_without_term": 25,
     "search_terms_obfuscated": 30,
@@ -134,6 +134,21 @@ def _simulate(n_users: int, rng) -> tuple[list[dict], list[dict]]:
     return ev, it
 
 
+def typed(df: pd.DataFrame) -> pd.DataFrame:
+    """Give event columns the types the extract writes, so Parquet and DuckDB see the same schema."""
+    df = df.copy()
+    for col, kind in EVENT_COLUMNS.items():
+        if kind == "int":
+            df[col] = df[col].astype("Int64")
+        elif kind == "float":
+            df[col] = df[col].astype("Float64")
+        elif kind == "string":
+            df[col] = df[col].astype("string")
+        elif kind == "timestamp":
+            df[col] = pd.to_datetime(df[col], utc=True)
+    return df
+
+
 def _key(df: pd.DataFrame) -> pd.Series:
     return (df["user_pseudo_id"] + "|" + df["ga_session_id"].astype("string") + "|"
             + df["event_ts"].dt.strftime("%Y%m%d%H%M%S") + "|" + df["event_name"])
@@ -172,7 +187,9 @@ def generate(out_dir, n_users: int = 9000, seed: int = 20201101) -> dict:
     E.loc[pick(search, 30), "search_term"] = "<Other>"
 
     in_gate = E["event_date"].between(*GATE_WEEK)
-    E.loc[pick(purchase & in_gate, 25), "transaction_id"] = None
+    emptied = pick(purchase & in_gate, 25)          # empty events: no ID and no revenue, so not orders
+    E.loc[emptied, ["transaction_id", "purchase_revenue_usd"]] = [None, 0.0]
+    I.loc[I["_key"].isin(E.loc[emptied, "_key"]), "item_revenue_usd"] = 0.0
     zero = pick(purchase, 8)
     E.loc[zero, "purchase_revenue_usd"] = 0.0
     I.loc[I["_key"].isin(E.loc[zero, "_key"]), "item_revenue_usd"] = 0.0
@@ -188,6 +205,7 @@ def generate(out_dir, n_users: int = 9000, seed: int = 20201101) -> dict:
     empty_cart = pick(name.eq("add_to_cart"), 30)
     I = I[~I["_key"].isin(E.loc[empty_cart, "_key"])]
     E.loc[empty_cart, ["n_items", "item_quantity"]] = [0, None]
+    E.loc[pick(name.eq("add_to_cart"), 7), "n_items"] = 9
     E = pd.concat([E, dup], ignore_index=True)
     I = pd.concat([I, dup_items], ignore_index=True)
 
@@ -195,7 +213,8 @@ def generate(out_dir, n_users: int = 9000, seed: int = 20201101) -> dict:
     sess = E.loc[E["ga_session_id"].notna(), ["user_pseudo_id", "ga_session_id"]].drop_duplicates()
     sess["s"] = sess["user_pseudo_id"] + "|" + sess["ga_session_id"].astype("string")
     E["_s"] = E["user_pseudo_id"] + "|" + E["ga_session_id"].astype("string")
-    buyers = set(E.loc[E["event_name"].eq("purchase"), "_s"])
+    is_order = E["event_name"].eq("purchase") & ~(E["transaction_id"].isna() & E["purchase_revenue_usd"].fillna(0).le(0))
+    buyers = set(E.loc[is_order, "_s"])
     no_checkout = r.choice(sorted(buyers), size=20, replace=False)
     rest = sorted(set(sess["s"]) - set(no_checkout))
     chosen = r.choice(rest, size=55, replace=False)
@@ -209,9 +228,7 @@ def generate(out_dir, n_users: int = 9000, seed: int = 20201101) -> dict:
 
     E = E.drop(columns=["_key", "_s"]).sort_values("event_ts", kind="stable").reset_index(drop=True)
     I = I.drop(columns=["_key"]).sort_values("event_ts", kind="stable").reset_index(drop=True)
-    for c in INT_COLS:
-        E[c] = E[c].astype("Int64")
-    E["purchase_revenue_usd"] = E["purchase_revenue_usd"].astype("Float64")
+    E = typed(E)
     I["quantity"] = I["quantity"].astype("Int64")
     for c in ("price_usd", "item_revenue_usd"):
         I[c] = I[c].astype("Float64")

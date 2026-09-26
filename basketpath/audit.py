@@ -35,14 +35,17 @@ CHECKS = [
      "SELECT COUNT(*) FROM sessions WHERE n_session_start > 1", "SELECT COUNT(*) FROM sessions"),
     ("purchases_missing_transaction_id", "Can every order be counted once?", "engineering", "high", 0.005,
      f"{_PURCHASES} AND (transaction_id IS NULL OR transaction_id IN {_MISSING})", _PURCHASES),
-    ("duplicate_purchase_events", "Is any order recorded more than once?", "engineering", "high", 0.002,
-     f"SELECT COUNT(*) - COUNT(DISTINCT transaction_id) FROM events WHERE event_name = 'purchase' "
-     f"AND transaction_id IS NOT NULL AND transaction_id NOT IN {_MISSING}", _PURCHASES),
+    ("duplicate_purchase_events", "Is any order sent more than once by the same user?", "engineering", "high", 0.002,
+     "SELECT COUNT(*) FROM purchases WHERE is_repeat", _PURCHASES),
     ("purchases_without_revenue", "Does every order carry its value?", "engineering", "high", 0.005,
      f"{_PURCHASES} AND (purchase_revenue_usd IS NULL OR purchase_revenue_usd <= 0)", _PURCHASES),
     ("ecommerce_events_without_items", "Do product, basket and order events say which products?", "engineering",
      "medium", 0.01, f"SELECT COUNT(*) FROM events WHERE event_name IN {_ECOM} AND COALESCE(n_items, 0) = 0",
      f"SELECT COUNT(*) FROM events WHERE event_name IN {_ECOM}"),
+    ("add_to_cart_with_many_products", "Does an add-to-basket event list what was added, not a whole page of products?",
+     "engineering", "medium", 0.05,
+     "SELECT COUNT(*) FROM events WHERE event_name = 'add_to_cart' AND n_items > 5",
+     "SELECT COUNT(*) FROM events WHERE event_name = 'add_to_cart'"),
     ("purchase_sessions_without_checkout", "Does every buyer pass through checkout as tracked?",
      "product and engineering", "medium", 0.02,
      "SELECT COUNT(*) FROM sessions WHERE has_purchase AND NOT has_begin_checkout",
@@ -57,8 +60,10 @@ CHECKS = [
     ("page_views_without_location", "Does every page view say which page?", "engineering", "medium", 0.005,
      "SELECT COUNT(*) FROM events WHERE event_name = 'page_view' AND (page_location IS NULL OR page_location = '')",
      "SELECT COUNT(*) FROM events WHERE event_name = 'page_view'"),
+    # Information only: delivery, tax and discounts can legitimately separate order value from item value.
+    # revenue_gap() reports the direction of the gaps, which is what tells a fault from a charge.
     ("purchase_revenue_mismatch", "Does each order's value match the sum of its items (within 1%)?",
-     "engineering", "medium", 0.01,
+     "check the direction of the gaps first", "info", None,
      f"SELECT COALESCE(SUM(CASE WHEN abs(rev - item_rev) > 0.01 * greatest(abs(item_rev), 0.01) THEN 1 ELSE 0 END), 0) FROM ({_REVENUE_JOIN})",
      f"SELECT COUNT(*) FROM ({_REVENUE_JOIN})"),
 ]
@@ -96,6 +101,19 @@ def coverage(con) -> pd.DataFrame:
         rows.append(dict(stage=stage, event=event, field=field, source=source, n_ok=ok, n_events=total,
                          coverage=share, target=COVERAGE_TARGET, status=status))
     return pd.DataFrame(rows)
+
+
+def revenue_gap(con) -> dict:
+    """How order values differ from their items: gaps all one way suggest charges, gaps both ways suggest noise."""
+    gap = "rev - item_rev"
+    tol = "0.01 * greatest(abs(item_rev), 0.01)"
+    match, above, below, median_gap = con.execute(f"""SELECT
+        COUNT(*) FILTER (WHERE abs({gap}) <= {tol}), COUNT(*) FILTER (WHERE {gap} > {tol}),
+        COUNT(*) FILTER (WHERE -({gap}) > {tol}),
+        MEDIAN(abs({gap}) / NULLIF(abs(item_rev), 0)) FILTER (WHERE abs({gap}) > {tol})
+        FROM ({_REVENUE_JOIN})""").fetchone()
+    return dict(match=int(match or 0), above=int(above or 0), below=int(below or 0),
+                median_gap=float(median_gap) if median_gap is not None else float("nan"))
 
 
 def run(con) -> tuple[pd.DataFrame, pd.DataFrame]:

@@ -53,8 +53,8 @@ is well inside the free monthly query allowance (the extractor prints the size b
 ```
 BigQuery (nested GA4 export)
   └─ extract.py     UNNEST event_params and items, one day at a time → Parquet
-      └─ db.py      DuckDB views → one row per session, with nested funnel flags
-          ├─ audit.py      13 checks + tracking-plan coverage → marts/audit_scorecard.csv
+      └─ db.py      DuckDB views → orders (de-duplicated) → one row per session, with nested funnel flags
+          ├─ audit.py      14 checks, including tracking-plan coverage → marts/audit_scorecard.csv
           ├─ analysis.py   funnel · search vs intent · checkout · trading windows · segments
           ├─ report.py     weekly KPI report with a data-quality gate → reports/weekly/
           └─ readout.py    charts, findings, OKRs → reports/, docs/okrs.md
@@ -63,11 +63,17 @@ BigQuery (nested GA4 export)
 Definitions for every metric are in [docs/metrics.md](docs/metrics.md). The tracking plan is in
 [docs/tracking_plan.md](docs/tracking_plan.md), generated from the same code the audit runs.
 
-### The data-quality gate
+### Orders, the analysis window and the data-quality gate
 
-A weekly report is marked **Held: do not circulate** when more than 5% of that week's purchase events have no
-transaction ID, or more than 2% of sessions have no `session_start`. It prints the reasons. A report that flags its
-own broken inputs is safer than one that silently publishes them.
+Three rules came out of diagnosing the real export, and all three are in [docs/metrics.md](docs/metrics.md):
+
+- **Purchase events are not orders.** Repeats of an ID the same user already sent are removed (double-fires). Events
+  with no ID and no revenue are not counted. Events with no ID but with revenue are counted and flagged.
+- **Journey analyses start once the journey was fully tracked.** Basket and checkout tracking was switched on during
+  November, so the build finds the first day from which every journey event fired normally, and starts there.
+- **The weekly gate catches incidents, not chronic issues.** A week is marked **Held: do not circulate** when it is
+  materially worse than the four weeks before it. Problems present every week become standing notes instead.
+  Held weeks are also left out of the analyses.
 
 ## Why trust it: the tests
 
@@ -75,16 +81,19 @@ The real export has no answer key, so every check is first proved on generated d
 schema, with tracking faults planted at known counts:
 
 - Each of the audit's checks finds exactly the number of faults planted, and plan coverage measures the planted gap.
+- The order rule removes a double-fire, drops an empty event and keeps an ID-less order with revenue, on a hand-built example.
+- When basket tracking is removed before a given date, the analysis window starts on that date.
 - In the generated data, search has **no** effect on buying by construction, but the people who search are more
   likely to buy anyway. The naive comparison shows a clear gap; the like-for-like comparison recovers roughly zero.
 - The statistics match textbook values (a Wilson interval, a z-test, the classic 3,841-per-arm sample size, and a
   Simpson's-paradox example).
-- The weekly gate holds exactly the one week where transaction IDs were planted missing.
+- The weekly gate holds exactly the one week with a planted incident, and a problem present in every week produces
+  a note, not a hold.
 - The build is idempotent: two runs give byte-identical marts.
 
 ```bash
 pip install -e ".[dev]"
-pytest                                   # 21 tests, under 10 seconds
+pytest                                   # 26 tests, about 10 seconds
 python -m basketpath.build --fixture     # full build on generated data → build/fixture/
 ```
 
@@ -98,8 +107,11 @@ Everything built from generated data goes to `build/fixture/` and is labelled as
 
 ## Limitations
 
-- This is Google's **obfuscated** sample. Some values are placeholders (for example `<Other>`), and Google notes
-  that the sample is not fully internally consistent. The audit reports placeholders separately from tracking faults.
+- This is Google's **obfuscated** sample. Some values are placeholders: every search term is `<obfuscated>`, so the
+  analysis uses whether people searched, not what they searched for. The audit reports placeholders separately from
+  tracking faults.
+- The product lists inside `view_item` and `add_to_cart` events usually hold about eleven products, so the analysis
+  works at session level, not product level.
 - It is a merchandise store, not a grocer. The methods transfer; the numbers do not.
 - Everything is observational. Differences between groups describe who did what, not what caused it.
 - `traffic_source` in the GA4 export is the user's **first** acquisition channel, not the source of each visit.

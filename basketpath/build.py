@@ -31,33 +31,40 @@ def _plain(v):
 
 def run(raw: pathlib.Path, out: pathlib.Path, real: bool) -> dict:
     con = db.connect(raw)
+    # 1. When was the journey fully tracked, and which weeks does the gate hold?
+    timeline, tracking = analysis.tracking_timeline(con)
+    daily = analysis.daily_kpis(con, tracking["start"])
+    held = report.held_weeks(daily)
+    window = analysis.create_analysis_sessions(con, tracking["start"], held) | dict(detected=tracking["detected"])
+    # 2. Audit, then the journey analyses on the analysis window only.
     card, cov = audit.run(con)
-    fun = analysis.funnel(con)
-    search, strata = analysis.search_vs_intent(con)
-    chk, chk_cmp = analysis.checkout_by_device(con)
-    segs = analysis.segments(con)
-    daily = analysis.daily_kpis(con)
-    wins = analysis.windows(con, daily)
+    A = "analysis_sessions"
+    fun = analysis.funnel(con, A)
+    search, strata = analysis.search_vs_intent(con, A)
+    chk, chk_cmp = analysis.checkout_by_device(con, A)
+    segs = analysis.segments(con, A)
+    wins = analysis.windows(con, daily, held)
 
     marts = out / "marts"
     marts.mkdir(parents=True, exist_ok=True)
-    for name, df in {"audit_scorecard": card, "tracking_coverage": cov, "funnel": fun, "search_strata": strata,
-                     "checkout_by_device": chk, "segments": segs, "daily_kpis": daily, "trading_windows": wins}.items():
+    for name, df in {"audit_scorecard": card, "tracking_coverage": cov, "tracking_timeline": timeline, "funnel": fun,
+                     "search_strata": strata, "checkout_by_device": chk, "segments": segs, "daily_kpis": daily,
+                     "trading_windows": wins}.items():
         df.to_csv(marts / f"{name}.csv", index=False, float_format="%.6g")
 
     results = _plain(dict(
         source="the real GA4 export" if real else "generated test data",
-        overview=analysis.overview(con), audit=card.to_dict("records"),
+        overview=analysis.overview(con), window=window, window_overview=analysis.overview(con, A),
+        orders=analysis.order_summary(con, A), revenue_gap=audit.revenue_gap(con), held_weeks=held,
+        audit=card.to_dict("records"),
         funnel_overall=fun[fun["breakdown"] == "overall"].to_dict("records"),
-        biggest_drop=analysis.biggest_drop(fun), search=search, follow_up=analysis.follow_up_test(con),
+        biggest_drop=analysis.biggest_drop(fun), search=search, follow_up=analysis.follow_up_test(con, A),
         checkout=chk_cmp, windows=wins.to_dict("records"), segments=segs.to_dict("records")))
-    # NaN became None; the readout expects floats where numbers were missing.
     (marts / "results.json").write_text(json.dumps(results, indent=2))
-    results = json.loads(json.dumps(results), parse_constant=float)
-    results = _restore_nan(results)
+    results = _restore_nan(json.loads(json.dumps(results)))
 
     reports = out / "reports"
-    readout.figures(fun, daily, chk, reports / "figures")
+    readout.figures(fun, daily, chk, timeline, window["start"], reports / "figures")
     (reports / "findings.md").write_text(readout.findings_markdown(results, real))
     report.write_weeks(daily, reports / "weekly", report.weeks(daily))
     docs = out / "docs"

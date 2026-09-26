@@ -27,7 +27,7 @@ INVENTORY_COLUMNS: dict[str, str] = {
 # Values that mean "no transaction ID" in a GA4 export.
 MISSING_TXN = ("", "(not set)")
 # Values Google's obfuscation writes in place of real ones. Reported, never treated as tracking faults.
-PLACEHOLDERS = ("<Other>", "(not set)", "(data deleted)")
+PLACEHOLDERS = ("<Other>", "(not set)", "(data deleted)", "<obfuscated>")
 
 
 def check_columns(columns, contract: dict, what: str) -> None:

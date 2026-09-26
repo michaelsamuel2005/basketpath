@@ -1,4 +1,4 @@
-"""Local analytics store: DuckDB views over the extracted Parquet, plus the session table."""
+"""Local analytics store: DuckDB views over the extracted Parquet, the order rule, and the session table."""
 from __future__ import annotations
 
 import pathlib
@@ -7,6 +7,28 @@ import duckdb
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 REFERENCE = ROOT / "data" / "reference"
+
+# How purchase events become orders (docs/metrics.md explains why):
+#   - an event with a valid transaction ID counts once per user; later events with the same ID and user are
+#     repeats, typically a confirmation page firing twice;
+#   - an event without a usable ID counts if it carries revenue: it is probably a real order, but it cannot be
+#     checked for duplicates, so it is flagged;
+#   - an event with no usable ID and no revenue is empty, and is not an order.
+PURCHASES_SQL = """
+CREATE OR REPLACE TABLE purchases AS
+WITH p AS (
+  SELECT user_pseudo_id, ga_session_id, event_ts, event_date, transaction_id, purchase_revenue_usd,
+         transaction_id IS NOT NULL AND transaction_id NOT IN ('', '(not set)') AS has_valid_id
+  FROM events WHERE event_name = 'purchase'),
+r AS (
+  SELECT *,
+         has_valid_id AND row_number() OVER (
+             PARTITION BY transaction_id, user_pseudo_id
+             ORDER BY event_ts, purchase_revenue_usd DESC NULLS LAST, ga_session_id) > 1 AS is_repeat,
+         NOT has_valid_id AND COALESCE(purchase_revenue_usd, 0) <= 0 AS is_empty
+  FROM p)
+SELECT *, NOT is_repeat AND NOT is_empty AS counts_as_order FROM r
+"""
 
 SESSIONS_SQL = """
 CREATE OR REPLACE TABLE sessions AS
@@ -28,12 +50,20 @@ WITH s AS (
     bool_or(event_name = 'begin_checkout')                          AS has_begin_checkout,
     bool_or(event_name = 'add_shipping_info')                       AS has_shipping,
     bool_or(event_name = 'add_payment_info')                        AS has_payment,
-    bool_or(event_name = 'purchase')                                AS has_purchase,
-    COALESCE(SUM(purchase_revenue_usd) FILTER (WHERE event_name = 'purchase'), 0) AS revenue_usd
+    bool_or(event_name = 'purchase')                                AS has_purchase_event
   FROM events
   WHERE ga_session_id IS NOT NULL
-  GROUP BY user_pseudo_id, ga_session_id
-)
+  GROUP BY user_pseudo_id, ga_session_id),
+o AS (
+  SELECT user_pseudo_id, ga_session_id,
+         COUNT(*) FILTER (WHERE counts_as_order)                                  AS orders,
+         COALESCE(SUM(purchase_revenue_usd) FILTER (WHERE counts_as_order), 0)   AS revenue_usd
+  FROM purchases WHERE ga_session_id IS NOT NULL
+  GROUP BY user_pseudo_id, ga_session_id),
+j AS (
+  SELECT s.*, COALESCE(o.orders, 0) AS orders, COALESCE(o.revenue_usd, 0) AS revenue_usd,
+         COALESCE(o.orders, 0) > 0 AS has_purchase
+  FROM s LEFT JOIN o USING (user_pseudo_id, ga_session_id))
 SELECT
   *,
   searches > 0 AS has_search,
@@ -52,8 +82,14 @@ SELECT
   COALESCE(MAX(CAST(has_purchase AS INT)) OVER (
       PARTITION BY user_pseudo_id ORDER BY start_ts
       ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING), 0) = 1     AS prior_purchaser
-FROM s
+FROM j
 """
+
+
+def build(con) -> None:
+    """Create the order and session tables from an `events` relation already defined on `con`."""
+    con.execute(PURCHASES_SQL)
+    con.execute(SESSIONS_SQL)
 
 
 def connect(raw_dir, reference_dir=REFERENCE) -> duckdb.DuckDBPyConnection:
@@ -69,5 +105,5 @@ def connect(raw_dir, reference_dir=REFERENCE) -> duckdb.DuckDBPyConnection:
     ref = pathlib.Path(reference_dir)
     con.execute(f"CREATE TABLE calendar AS SELECT CAST(date AS DATE) AS date, label FROM read_csv('{(ref / 'trading_calendar.csv').as_posix()}', header = true)")
     con.execute(f"CREATE TABLE trading_windows AS SELECT window_name, CAST(start_date AS DATE) AS start_date, CAST(end_date AS DATE) AS end_date, role FROM read_csv('{(ref / 'trading_windows.csv').as_posix()}', header = true)")
-    con.execute(SESSIONS_SQL)
+    build(con)
     return con
