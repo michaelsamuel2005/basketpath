@@ -262,7 +262,11 @@ def findings_markdown(r: dict, real: bool) -> str:
     L += ["", "Conversion counts orders, which were tracked throughout, so every window is compared with the "
           "pre-Thanksgiving baseline, leaving out days in held weeks. Checkout completion appears only for windows inside "
           "the analysis window: before then checkout was not tracked the way it was later, so a comparison would measure "
-          "the tracking change, not shoppers. Orders in the baseline mostly lack IDs and cannot be checked for duplicates.",
+          "the tracking change, not shoppers." + next(
+              (f" In the baseline, {pct(x['share_orders_without_id'])} of orders have no transaction ID and cannot be "
+               "checked for duplicates, so its revenue per order is less certain than later windows'."
+               for x in r["windows"] if x["role"] == "baseline" and not _nan(x["share_orders_without_id"])
+               and x["share_orders_without_id"] > 0), ""),
           "", "![Conversion through peak trading](figures/daily_conversion.png)", "",
           "## Custom segments", "", "| Segment | Sessions | Share of sessions | Conversion | Revenue per session |",
           "|---|---:|---:|---:|---:|"]

@@ -62,6 +62,8 @@ def test_checkout_completion_is_not_compared_before_the_journey_was_tracked(fx):
     baseline, bfcm = w.iloc[0], w.loc["Black Friday to Cyber Monday"]
     assert baseline["role"] == "baseline" and pd.isna(baseline["checkout_completion"])
     assert not pd.isna(baseline["conversion"]) and not pd.isna(bfcm["checkout_completion"])
+    # Every generated order has an ID, so the baseline caveat is measured as zero rather than asserted.
+    assert baseline["share_orders_without_id"] == 0
 
 
 def test_segments_are_consistent_with_the_session_table(fx):

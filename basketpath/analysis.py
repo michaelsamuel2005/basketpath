@@ -288,8 +288,8 @@ def windows(con, daily: pd.DataFrame, excluded_weeks=(), journey_start: str | No
     def agg(start, end):
         span = daily[(daily["date"] >= pd.Timestamp(start)) & (daily["date"] <= pd.Timestamp(end))]
         g = span[~span["date"].isin(held)]
-        return {k: int(g[k].sum()) for k in ("sessions", "purchasing_sessions", "orders", "checkout_sessions",
-                                            "checkout_completed", "search_sessions")} \
+        return {k: int(g[k].sum()) for k in ("sessions", "purchasing_sessions", "orders", "orders_without_id",
+                                            "checkout_sessions", "checkout_completed", "search_sessions")} \
             | dict(days=len(g), days_excluded=len(span) - len(g), revenue=float(g["revenue_usd"].sum()))
 
     base = tw[tw["role"] == "baseline"].iloc[0]
@@ -307,6 +307,7 @@ def windows(con, daily: pd.DataFrame, excluded_weeks=(), journey_start: str | No
                          conversion=conv["p1"], conversion_change_pp=conv["diff"], conversion_change_rel=conv["rel"],
                          conversion_p_value=conv["p_value"],
                          revenue_per_order=a["revenue"] / a["orders"] if a["orders"] else math.nan,
+                         share_orders_without_id=a["orders_without_id"] / a["orders"] if a["orders"] else math.nan,
                          checkout_completion=comp["p1"], checkout_completion_change_pp=comp["diff"],
                          checkout_completion_p_value=comp["p_value"],
                          search_share=a["search_sessions"] / a["sessions"] if a["sessions"] else math.nan))
